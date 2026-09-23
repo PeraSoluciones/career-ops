@@ -428,6 +428,12 @@ Report header:
 
 ---
 
+## Job Description (archived verbatim)
+
+{the JD text from {{JD_FILE}} pasted here verbatim}
+
+---
+
 ## Machine Summary
 
 ```yaml
@@ -471,6 +477,7 @@ risk_summary:
 
 Then include:
 
+- `## Job Description (archived verbatim)` — the full JD pasted verbatim. REQUIRED, not optional (AGENTS.md rule #2789): the `**URL:**` header is a live pointer and rots the moment the posting closes, so this section is the only durable record of what was asked. `check-jd-archive.mjs` validates it. Paste `{{JD_FILE}}`'s content unchanged (or, when the JD was fetched instead of prefetched, the fetched text as-is).
 - `## Machine Summary`
 - `## A) Role Summary`
 - `## B) CV Match`
