@@ -489,7 +489,7 @@ Then include:
 - `## Risk Summary`
 - `## Extracted Keywords`
 
-Translate these human-facing headings according to `language.output` when it is not English. Keep `## Machine Summary` and YAML keys exact for downstream parsers.
+Translate these human-facing headings according to `language.output` when it is not English. Keep `## Machine Summary`, the `## Job Description (archived verbatim)` heading, and the YAML keys exact for downstream parsers: `check-jd-archive.mjs` matches the archive heading by its literal English `## Job Description` prefix, so a translated heading reports a real archive as missing.
 
 ### Step 4 — Generate PDF (configurable)
 

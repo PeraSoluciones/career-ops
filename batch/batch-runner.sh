@@ -780,10 +780,12 @@ process_offer() {
   # Use mktemp instead of a predictable path: a fixed name like
   # /tmp/batch-jd-${id}.txt is guessable, so an attacker on a shared machine
   # could pre-create it as a symlink and redirect or clobber the write.
-  # Default to a project-local dir rather than the shared /tmp: same mktemp
-  # randomness, and CLIs that auto-reject external_directory (/tmp/*) — opencode
-  # does — can then read the JD instead of the whole evaluation failing.
-  local jd_tmp_dir="${TMPDIR:-$PROJECT_DIR/batch/tmp}"
+  # Always project-local, never ${TMPDIR}: the worker CLI has to be able to read
+  # this file, and CLIs that auto-reject external_directory (/tmp/*) — opencode
+  # does — cannot read anything outside the project. Honouring TMPDIR here would
+  # re-open that hole whenever TMPDIR is the usual /tmp. mktemp still randomizes
+  # the name, so the symlink-guessability property above is unchanged.
+  local jd_tmp_dir="$PROJECT_DIR/batch/tmp"
   mkdir -p "$jd_tmp_dir"
   local jd_file
   jd_file="$(mktemp "$jd_tmp_dir/batch-jd-${id}.XXXXXX")"
