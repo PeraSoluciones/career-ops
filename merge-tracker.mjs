@@ -26,7 +26,7 @@ import { getCareerOpsRoot } from './path-resolver.mjs';
 import { roleFuzzyMatch } from './role-matcher.mjs';
 import { parsePdfIndex } from './find.mjs';
 import { LEGACY_COLMAP, TSV_REQUIRED_FIELDS, detectColumns, isHeaderRow, resolveScoreStatus, looksLikeTsvHeaderRow, resolveTsvColumns, looksLikeScoreCell, normalizeVia, normalizeTextKey, SEPARATOR_ROW_RE, extractReqNumber } from './tracker-parse.mjs';
-import { resolveTrackerPath, resolveWorkspaceRoot, resolvePdfIndexPath, trackerLockDirFor, acquireTrackerLock, writeFileAtomic, normalizeCompany, companiesMatchIgnoringCorporateForm, cell, loadCanonicalStates } from './tracker-utils.mjs';
+import { resolveTrackerPath, resolveWorkspaceRoot, resolvePdfIndexPath, trackerLockDirFor, acquireTrackerLock, writeFileAtomic, normalizeCompany, companiesMatchIgnoringCorporateForm, cell, loadCanonicalStates, findDeadReportLink } from './tracker-utils.mjs';
 // Canonical posting-URL key. Kept in its own module so scan.mjs / scan-history
 // can adopt the same key later without the definitions drifting.
 import { normalizeUrl, isAggregatorUrl, aggregatorPostingId } from './url-key.mjs';
@@ -1451,12 +1451,12 @@ for (const file of tsvFiles) {
   // exactly one verify-pipeline would flag later. resolveReportPath() is NOT
   // used: it strips leading `../` and so can accept a link verify-pipeline
   // rejects (e.g. `../../stray.md`).
-  // A directory (e.g. a link to `reports/`) is not a report, so require a
-  // regular file; verify-pipeline's Check 3 applies the same rule.
-  const isReportFile = (p) => { try { return statSync(p).isFile(); } catch { return false; } };
-  const reportLink = (addition.report || '').match(/\]\(([^)]+)\)/);
-  if (reportLink && !isReportFile(join(TRACKER_DIR, reportLink[1])) && !isReportFile(join(DATA_ROOT, reportLink[1]))) {
-    const linked = reportLink[1].trim();
+  // The rule itself lives in tracker-utils.mjs (findDeadReportLink), shared with
+  // verify-pipeline's Check 3 and fix-report-links.mjs: a directory (e.g. a link
+  // to `reports/`) is not a report, so a regular file is required.
+  const deadLink = findDeadReportLink(addition.report, TRACKER_DIR, DATA_ROOT);
+  if (deadLink !== null) {
+    const linked = deadLink.trim();
     console.warn(`⚠️  ${file}: ${addition.company} — ${addition.role}: report link "${linked}" does not resolve to a file (checked from ${TRACKER_DIR} and ${DATA_ROOT}) — the row is not rewritten; verify-pipeline will flag it until the report exists`);
     missingReports++;
   }
